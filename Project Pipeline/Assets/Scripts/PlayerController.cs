@@ -71,7 +71,13 @@ public class PlayerController : MonoBehaviour
 
         charCon.Move(movement * Time.deltaTime);
 
-
+        if(Input.GetButton("Pause")){
+            Cursor.lockState = CursorLockMode.None;
+        }else if(Cursor.lockState == CursorLockMode.None){
+            if(Input.GetButtonDown("Fire1")){
+                Cursor.lockState = CursorLockMode.Locked;
+            }
+        }
 
 
     }
