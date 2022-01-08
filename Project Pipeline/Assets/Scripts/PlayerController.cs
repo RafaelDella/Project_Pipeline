@@ -11,11 +11,24 @@ public class PlayerController : MonoBehaviour
 
     public bool invertLook;
 
-    public float moveSpeed = 10f;
+    public float moveSpeed = 5f, runSpeed = 8f;
+    public float activeMoveSpeed;
     private Vector3 moveDir, movement;
+
+    public CharacterController charCon;
+
+    private Camera cam;
+
+    public float jumpForce = 7.5f, gravityMod = 2.5f;
+
+    public Transform groundCheckPoint;
+    private bool isGrounded;
+    public LayerMask whatIsGround;
 
     private void Start() {
         Cursor.lockState = CursorLockMode.Locked;
+
+        cam = Camera.main;
     }
 
     private void Update() {
@@ -34,12 +47,39 @@ public class PlayerController : MonoBehaviour
 
         moveDir = new Vector3(Input.GetAxisRaw("Horizontal"), 0f, Input.GetAxisRaw("Vertical"));
 
-        movement = ((transform.forward * moveDir.z) + (transform.right * moveDir.x)).normalized;
+        if(Input.GetButton("Run")){
+            activeMoveSpeed = runSpeed;
+        }else{
+            activeMoveSpeed = moveSpeed;
+        }
 
-        transform.position += movement * moveSpeed * Time.deltaTime;
+        float yVel = movement.y;
+        movement = ((transform.forward * moveDir.z) + (transform.right * moveDir.x)).normalized * activeMoveSpeed;
+        movement.y = yVel;
+
+        if(charCon.isGrounded){
+            movement.y = 0f;
+        }
+
+        isGrounded = Physics.Raycast(groundCheckPoint.position, Vector3.down, .25f, whatIsGround);
+
+        if(Input.GetButtonDown("Jump") && isGrounded){
+            movement.y = jumpForce;
+        }
+
+        movement.y += Physics.gravity.y * Time.deltaTime * gravityMod;
+
+        charCon.Move(movement * Time.deltaTime);
 
 
 
+
+    }
+
+    private void LateUpdate() {
+        cam.transform.position = viewPoint.position;
+        cam.transform.rotation = viewPoint.rotation;
+        
 
     }
 }
