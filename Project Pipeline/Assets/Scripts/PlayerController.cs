@@ -52,6 +52,8 @@ public class PlayerController : MonoBehaviour
     }
 
     private void Update() {
+
+        //Move Char and Camera
         mouseInput = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y"))  * mouseSensivity;
 
         transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, transform.rotation.eulerAngles.y + mouseInput.x, transform.rotation.eulerAngles.z);
@@ -91,6 +93,7 @@ public class PlayerController : MonoBehaviour
 
         charCon.Move(movement * Time.deltaTime);
 
+        //Select Gun
         if(allGuns[selectedGun].muzzleFlash.activeInHierarchy){
             muzzleFlashCounter -= Time.deltaTime;
 
@@ -99,6 +102,7 @@ public class PlayerController : MonoBehaviour
             }
         }
 
+        //Fire
         if(!overHeated){    
             if(Input.GetButtonDown("Fire1")){
                 Shoot();
@@ -128,6 +132,7 @@ public class PlayerController : MonoBehaviour
 
         UIController.instance.weaponTempSlider.value = heatCounter;
 
+        //Switching Guns
         if(Input.GetAxisRaw("Mouse ScrollWheel") > 0f){
             selectedGun++;
 
@@ -177,7 +182,7 @@ public class PlayerController : MonoBehaviour
         shotCounter = allGuns[selectedGun].timeBetweenShots;
 
         heatCounter += allGuns[selectedGun].heatPerShot;
-        if(heatCounter >= maxHeat){
+        if(heatCounter >= maxHeat){ //UI Controller (Heat)
             heatCounter = maxHeat;
 
             overHeated = true;
