@@ -144,9 +144,11 @@ public class PlayerController : MonoBehaviour
             SwitchGun();
         }
 
+        //Selecting Weapon With Number Keys
         for(int i = 0; i < allGuns.Length; i++){
             if(Input.GetKeyDown((i + 1).ToString())){
-
+                selectedGun =i;
+                SwitchGun();
             }
         }
 
