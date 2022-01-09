@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 using TMPro;
+using Photon.Realtime;
 
 public class Launcher : MonoBehaviourPunCallbacks
 {
@@ -17,6 +18,9 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     public GameObject menuButtons;
 
+    public GameObject createRoomScreen;
+    public TMP_InputField roomNameInput;
+
     private void Start() {
         CloseMenus();
 
@@ -29,6 +33,7 @@ public class Launcher : MonoBehaviourPunCallbacks
     void CloseMenus(){
         loadingScreen.SetActive(false);
         menuButtons.SetActive(false);
+        createRoomScreen.SetActive(false);
     }
 
     public override void OnConnectedToMaster(){
@@ -42,7 +47,24 @@ public class Launcher : MonoBehaviourPunCallbacks
         
         CloseMenus();
         menuButtons.SetActive(true);
-
-        
     }
+
+    public void OpenRoomCreate(){
+        CloseMenus();
+        createRoomScreen.SetActive(true);
+    }
+
+    public void CreateRoom(){
+        if(!string.isNullOrEmpty(roomNameInput.text)){
+            RoomOptions options = new RoomOptions();
+            options.maxPlayer = 8;
+
+            PhotonNetwork.CreateRoom(roomNameInput.text, options);
+
+            CloseMenus();
+            loadingText.text = "Creating Room...";
+            loadingScreen.SetActive(true);
+        }
+    }
+
 }
