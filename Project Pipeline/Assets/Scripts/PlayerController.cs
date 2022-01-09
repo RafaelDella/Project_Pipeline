@@ -26,12 +26,16 @@ public class PlayerController : MonoBehaviour
     public LayerMask whatIsGround;
 
     public GameObject bulletImpact;
-    public float timeBetweenShots = .1f;
     private float shotCounter;
+    private float muzzleFlashDisplayTime = (1/60);
+    private float muzzleFlashCounter;
 
-    public float maxHeat = 10f, heatPerShot =1f, coolRate = 4f, overheatCoolRate = 5f;
+    public float maxHeat = 10f, coolRate = 4f, overheatCoolRate = 5f;
     private float heatCounter;
     private bool overHeated;
+
+    public Guns[] allGuns;
+    private int selectedGun;
 
     private void Start() {
         Cursor.lockState = CursorLockMode.Locked;
@@ -39,6 +43,8 @@ public class PlayerController : MonoBehaviour
         cam = Camera.main;
 
         UIController.instance.weaponTempSlider.maxValue = maxHeat;
+
+        SwitchGun();
     }
 
     private void Update() {
@@ -81,12 +87,20 @@ public class PlayerController : MonoBehaviour
 
         charCon.Move(movement * Time.deltaTime);
 
+        if(allGuns[selectedGun].muzzleFlash.activeInHierarchy){
+            muzzleFlashCounter -= Time.deltaTime;
+
+            if(muzzleFlashCounter <= 0f){
+                allGuns[selectedGun].muzzleFlash.SetActive(false);
+            }
+        }
+
         if(!overHeated){    
             if(Input.GetButtonDown("Fire1")){
                 Shoot();
             }
 
-            if(Input.GetButton("Fire1")){
+            if(Input.GetButton("Fire1") && allGuns[selectedGun].isAutomatic){
                 shotCounter -= Time.deltaTime;
 
                 if(shotCounter <= 0){
@@ -110,6 +124,21 @@ public class PlayerController : MonoBehaviour
 
         UIController.instance.weaponTempSlider.value = heatCounter;
 
+        if(Input.GetAxisRaw("Mouse ScrollWheel") > 0f){
+            selectedGun++;
+
+            if(selectedGun >= allGuns.Length){
+                selectedGun = 0;
+            }
+            SwitchGun();
+
+        }else if(Input.GetAxisRaw("Mouse ScrollWheel") < 0f){
+            selectedGun--;
+            if(selectedGun < 0){
+                selectedGun = allGuns.Length -1; //0
+            }
+            SwitchGun();
+        }
 
 
         if(Input.GetButton("Pause")){
@@ -134,9 +163,9 @@ public class PlayerController : MonoBehaviour
             Destroy(obj_bulletImpact, 10f);
         }
 
-        shotCounter = timeBetweenShots;
+        shotCounter = allGuns[selectedGun].timeBetweenShots;
 
-        heatCounter += heatPerShot;
+        heatCounter += allGuns[selectedGun].heatPerShot;
         if(heatCounter >= maxHeat){
             heatCounter = maxHeat;
 
@@ -144,7 +173,8 @@ public class PlayerController : MonoBehaviour
 
             UIController.instance.overheatedMsg.gameObject.SetActive(true);
         }
-
+        allGuns[selectedGun].muzzleFlash.SetActive(true);
+        muzzleFlashCounter = muzzleFlashDisplayTime;
     }
 
     private void LateUpdate() {
@@ -152,5 +182,15 @@ public class PlayerController : MonoBehaviour
         cam.transform.rotation = viewPoint.rotation;
         
 
+    }
+
+    void SwitchGun(){
+        foreach (Guns gun in allGuns)
+        {
+            gun.gameObject.SetActive(false);
+        }
+
+        allGuns[selectedGun].gameObject.SetActive(true);
+        allGuns[selectedGun].muzzleFlash.SetActive(false);
     }
 }
