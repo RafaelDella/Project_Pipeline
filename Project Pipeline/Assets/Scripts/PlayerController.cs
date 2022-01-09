@@ -26,11 +26,19 @@ public class PlayerController : MonoBehaviour
     public LayerMask whatIsGround;
 
     public GameObject bulletImpact;
+    public float timeBetweenShots = .1f;
+    private float shotCounter;
+
+    public float maxHeat = 10f, heatPerShot =1f, coolRate = 4f, overheatCoolRate = 5f;
+    private float heatCounter;
+    private bool overHeated;
 
     private void Start() {
         Cursor.lockState = CursorLockMode.Locked;
 
         cam = Camera.main;
+
+        UIController.instance.weaponTempSlider.maxValue = maxHeat;
     }
 
     private void Update() {
@@ -73,12 +81,34 @@ public class PlayerController : MonoBehaviour
 
         charCon.Move(movement * Time.deltaTime);
 
-        if(Input.GetButtonDown("Fire1")){
-            Shoot();
+        if(!overHeated){    
+            if(Input.GetButtonDown("Fire1")){
+                Shoot();
+            }
+
+            if(Input.GetButton("Fire1")){
+                shotCounter -= Time.deltaTime;
+
+                if(shotCounter <= 0){
+                    Shoot();
+                }
+            }
+
+            heatCounter -= coolRate * Time.deltaTime;
+        }else{
+            heatCounter -= overheatCoolRate * Time.deltaTime;
+            if(heatCounter <= 0f){
+                overHeated = false;
+
+                UIController.instance.overheatedMsg.gameObject.SetActive(false);
+            }
         }
 
+        if(heatCounter < 0){
+            heatCounter = 0f;
+        }
 
-
+        UIController.instance.weaponTempSlider.value = heatCounter;
 
 
 
@@ -102,6 +132,17 @@ public class PlayerController : MonoBehaviour
 
             GameObject obj_bulletImpact = Instantiate(bulletImpact, hit.point + (hit.normal * .002f), Quaternion.LookRotation(hit.normal, Vector3.up));
             Destroy(obj_bulletImpact, 10f);
+        }
+
+        shotCounter = timeBetweenShots;
+
+        heatCounter += heatPerShot;
+        if(heatCounter >= maxHeat){
+            heatCounter = maxHeat;
+
+            overHeated = true;
+
+            UIController.instance.overheatedMsg.gameObject.SetActive(true);
         }
 
     }
