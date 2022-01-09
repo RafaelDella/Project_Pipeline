@@ -23,6 +23,8 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     public GameObject roomScreen;
     public TMP_Text roomNameText;
+    public TMP_Text playerNameLabel;
+    private List<TMP_Text> allPLayerNames = new List<TMP_Text>();
 
     public GameObject errorScreen;
     public TMP_Text errorText;
@@ -60,6 +62,10 @@ public class Launcher : MonoBehaviourPunCallbacks
         
         CloseMenus();
         menuButtons.SetActive(true);
+
+        PhotonNetwork.NickName = Random.Range(0, 1000).ToString();
+
+        //ListAllPlayers();
     }
 
     public void OpenRoomCreate(){
@@ -83,7 +89,39 @@ public class Launcher : MonoBehaviourPunCallbacks
     public override void OnJoinedRoom(){
         CloseMenus();
         roomScreen.SetActive(true);
+
         roomNameText.text = PhotonNetwork.CurrentRoom.Name;
+
+        ListAllPlayers();
+    }
+
+    private void ListAllPlayers(){
+        foreach(TMP_Text player in allPLayerNames){
+            Destroy(player.gameObject);
+
+        }
+        allPLayerNames.Clear();
+
+        Player[] players = PhotonNetwork.PlayerList;
+        for(int i = 0; i < players.Length; i++){
+            TMP_Text newPlayerNameLabel = Instantiate(playerNameLabel, playerNameLabel.transform.parent);
+            newPlayerNameLabel.text = players[i].NickName;
+            newPlayerNameLabel.gameObject.SetActive(true);
+            
+            allPLayerNames.Add(newPlayerNameLabel);
+        }
+    }
+
+    public override void OnPlayerEnteredRoom(Player newPlayer){
+        TMP_Text newPlayerNameLabel = Instantiate(playerNameLabel, playerNameLabel.transform.parent);
+        newPlayerNameLabel.text = newPlayer.NickName;
+        newPlayerNameLabel.gameObject.SetActive(true);
+            
+        allPLayerNames.Add(newPlayerNameLabel);
+    }
+
+    public override void OnPlayerLeftRoom(Player otherPlayer){
+        ListAllPlayers();
     }
 
     public override void OnCreateRoomFailed(short returnCode, string message){
@@ -145,6 +183,10 @@ public class Launcher : MonoBehaviourPunCallbacks
         CloseMenus();
         loadingText.text = "Joining Room...";
         loadingScreen.SetActive(true);
+    }
+
+    public void QuitGame(){
+        Application.Quit();
     }
 
 }
