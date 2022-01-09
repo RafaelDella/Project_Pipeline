@@ -25,6 +25,8 @@ public class PlayerController : MonoBehaviour
     private bool isGrounded;
     public LayerMask whatIsGround;
 
+    public GameObject bulletImpact;
+
     private void Start() {
         Cursor.lockState = CursorLockMode.Locked;
 
@@ -71,6 +73,15 @@ public class PlayerController : MonoBehaviour
 
         charCon.Move(movement * Time.deltaTime);
 
+        if(Input.GetButtonDown("Fire1")){
+            Shoot();
+        }
+
+
+
+
+
+
         if(Input.GetButton("Pause")){
             Cursor.lockState = CursorLockMode.None;
         }else if(Cursor.lockState == CursorLockMode.None){
@@ -79,6 +90,19 @@ public class PlayerController : MonoBehaviour
             }
         }
 
+
+    }
+
+    private void Shoot(){
+        Ray ray = cam.ViewportPointToRay(new Vector3(.5f, .5f, 0f));
+        ray.origin = cam.transform.position;
+
+        if(Physics.Raycast(ray, out RaycastHit hit)){
+            Debug.Log(hit.collider.gameObject.name);
+
+            GameObject obj_bulletImpact = Instantiate(bulletImpact, hit.point + (hit.normal * .002f), Quaternion.LookRotation(hit.normal, Vector3.up));
+            Destroy(obj_bulletImpact, 10f);
+        }
 
     }
 
