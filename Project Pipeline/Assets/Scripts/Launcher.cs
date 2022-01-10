@@ -95,6 +95,11 @@ public class Launcher : MonoBehaviourPunCallbacks
         }
     }
 
+    public void CloseCreateRoom(){
+        CloseMenus();
+        menuButtons.SetActive(true);
+    }
+
     public void OpenRoomCreate(){
         CloseMenus();
         createRoomScreen.SetActive(true);

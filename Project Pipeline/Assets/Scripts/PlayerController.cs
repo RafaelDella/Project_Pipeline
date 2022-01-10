@@ -40,12 +40,17 @@ public class PlayerController : MonoBehaviourPunCallbacks
 
     public GameObject playerHitImpact;
 
+    public int maxHealth = 100;
+    private int currentHealth;
+
     private void Start() {
         Cursor.lockState = CursorLockMode.Locked;
 
         cam = Camera.main;
 
         UIController.instance.weaponTempSlider.maxValue = maxHeat;
+
+        currentHealth = maxHealth;
 
         SwitchGun();
 
@@ -180,7 +185,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
             if(hit.collider.gameObject.tag == "Player"){
                 PhotonNetwork.Instantiate(playerHitImpact.name, hit.point, Quaternion.identity);
 
-                hit.collider.gameObject.GetPhotonView().RPC("DealDamage", RpcTarget.All, photonView.Owner.NickName);
+                hit.collider.gameObject.GetPhotonView().RPC("DealDamage", RpcTarget.All, photonView.Owner.NickName, allGuns[selectedGun].shotDamage);
             }else{
                 GameObject obj_bulletImpact = Instantiate(bulletImpact, hit.point + (hit.normal * .002f), Quaternion.LookRotation(hit.normal, Vector3.up));
                 Destroy(obj_bulletImpact, 10f);
@@ -203,14 +208,23 @@ public class PlayerController : MonoBehaviourPunCallbacks
     }
 
     [PunRPC]// Run at same time in every copy of the player
-    public void DealDamage(string damager){
-        TakeDamage(damager);
+    public void DealDamage(string damager, int damageAmount){
+        TakeDamage(damager, damageAmount);
     }
 
-    public void TakeDamage(string damager){
-        Debug.Log(photonView.Owner.NickName + " been hit by " + damager);
+    public void TakeDamage(string damager, int damageAmount){
+        if(photonView.IsMine){
+            //Debug.Log(photonView.Owner.NickName + " been hit by " + damager);
 
-        gameObject.SetActive(false);
+            currentHealth -= damageAmount;
+
+            if(currentHealth <= 0){
+                currentHealth = 0;
+                PlayerSpawner.instance.Die(damager);
+            }
+
+
+        }
     }
 
     private void LateUpdate() {

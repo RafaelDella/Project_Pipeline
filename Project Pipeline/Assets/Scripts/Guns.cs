@@ -7,5 +7,6 @@ public class Guns : MonoBehaviour
     public bool isAutomatic;
     public float timeBetweenShots = .1f, heatPerShot = 1f;
     public GameObject muzzleFlash;
+    public int shotDamage;
 
 }
