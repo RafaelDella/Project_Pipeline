@@ -50,9 +50,12 @@ public class PlayerController : MonoBehaviourPunCallbacks
 
         UIController.instance.weaponTempSlider.maxValue = maxHeat;
 
+        SwitchGun();
+
         currentHealth = maxHealth;
 
-        SwitchGun();
+        UIController.instance.healthSlider.maxValue = maxHealth;
+        UIController.instance.healthSlider.value = currentHealth;
 
     }
 
@@ -223,7 +226,8 @@ public class PlayerController : MonoBehaviourPunCallbacks
                 PlayerSpawner.instance.Die(damager);
             }
 
-
+            
+            UIController.instance.healthSlider.value = currentHealth;
         }
     }
 
