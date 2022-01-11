@@ -5357,6 +5357,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ecc0e01417045764d9781990e16b9993, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  allPlayers:
+  - name: Rafael
+    actor: 0
+    kills: 8
+    death: 5
+  - name: Jamees
+    actor: 1
+    kills: 5
+    death: 8
 --- !u!4 &1747649649
 Transform:
   m_ObjectHideFlags: 0
