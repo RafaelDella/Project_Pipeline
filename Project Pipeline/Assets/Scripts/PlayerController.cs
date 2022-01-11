@@ -45,9 +45,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
 
     public Animator anim;
     public GameObject playerModel;
-
-    public Transform modelGunPoint;
-    public Transform gunHolder;
+    public Transform modelGunPoint, gunHolder;
 
     private void Start() {
         Cursor.lockState = CursorLockMode.Locked;
@@ -56,7 +54,8 @@ public class PlayerController : MonoBehaviourPunCallbacks
 
         UIController.instance.weaponTempSlider.maxValue = maxHeat;
 
-        SwitchGun();
+        //SwitchGun();
+        photonView.RPC("SetGun", RpcTarget.All, selectedGun);
 
         currentHealth = maxHealth;
 
@@ -68,7 +67,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
         }else{
             gunHolder.parent = modelGunPoint;
             gunHolder.localPosition = Vector3.zero;
-            gunHolder.rotation = Quaternion.identity;
+            gunHolder.localRotation = Quaternion.identity;
         }
 
     }
@@ -82,7 +81,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
             transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, transform.rotation.eulerAngles.y + mouseInput.x, transform.rotation.eulerAngles.z);
 
             verticalRotStore += mouseInput.y;
-            verticalRotStore = Mathf.Clamp(verticalRotStore, -60f, 60f);
+            verticalRotStore = Mathf.Clamp(verticalRotStore, -70f, 70f);
 
             if(!invertLook){
                 viewPoint.rotation = Quaternion.Euler(-verticalRotStore, viewPoint.rotation.eulerAngles.y, viewPoint.rotation.eulerAngles.z);
@@ -162,21 +161,24 @@ public class PlayerController : MonoBehaviourPunCallbacks
                 if(selectedGun >= allGuns.Length){
                     selectedGun = 0;
                 }
-                SwitchGun();
+                //SwitchGun();
+                photonView.RPC("SetGun", RpcTarget.All, selectedGun);
 
             }else if(Input.GetAxisRaw("Mouse ScrollWheel") < 0f){
                 selectedGun--;
                 if(selectedGun < 0){
                     selectedGun = allGuns.Length -1; //0
                 }
-                SwitchGun();
+                //SwitchGun();
+                photonView.RPC("SetGun", RpcTarget.All, selectedGun);
             }
 
             //Selecting Weapon With Number Keys
             for(int i = 0; i < allGuns.Length; i++){
                 if(Input.GetKeyDown((i + 1).ToString())){
                     selectedGun =i;
-                    SwitchGun();
+                    //SwitchGun();
+                    photonView.RPC("SetGun", RpcTarget.All, selectedGun);
                 }
             }
 
@@ -265,5 +267,13 @@ public class PlayerController : MonoBehaviourPunCallbacks
 
         allGuns[selectedGun].gameObject.SetActive(true);
         allGuns[selectedGun].muzzleFlash.SetActive(false);
+    }
+
+    [PunRPC]
+    public void SetGun(int gunToSwitchTo){
+        if(gunToSwitchTo < allGuns.Length){
+            selectedGun = gunToSwitchTo;
+            SwitchGun();
+        }
     }
 }
