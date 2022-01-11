@@ -17,13 +17,11 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
     public enum EventCodes : byte{ //enum a specific category of data, easy to use
         NewPlayer,
         ListPlayer,
-        ChangeStat,
+        UpdateStat,
     }
 
     public List<PlayerInfo> allPlayers = new List<PlayerInfo>();
     private int index;
-
-    public EventCodes theEvent;
 
     private void Start() {
         if(!PhotonNetwork.IsConnected){
@@ -40,7 +38,31 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
     }
 
     public void OnEvent(EventData photonEvent){
+        if(photonEvent.Code < 200){
+            EventCodes theEvent = (EventCodes)photonEvent.Code;
+            object[] data = (object[])photonEvent.CustomData;
 
+            switch(theEvent){
+                case EventCodes.NewPlayer:
+
+                    NewPlayerReceive(data);
+                    
+                    break;
+
+                case EventCodes.ListPlayer:
+
+                    ListPlayersReceive(data);
+
+                    break;
+                
+                case EventCodes.UpdateStat:
+
+                    UpdateStatReceive(data);
+
+                    break;
+
+            }
+        }
     }
 
     public override void OnEnable(){
@@ -49,6 +71,30 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
     public override void OnDisable(){
         PhotonNetwork.RemoveCallbackTarget(this);
+    }
+
+    public void NewPlayerSend(){
+
+    }
+
+    public void NewPlayerReceive(object[] dataReceived){
+
+    }
+
+    public void ListPlayersSend(){
+
+    }
+
+    public void ListPlayersReceive(object[] dataReceived){
+        
+    }
+
+    public void UpdateStatSend(){
+
+    }
+
+    public void UpdateStatReceive(object[] dataReceived){
+        
     }
 }
 
