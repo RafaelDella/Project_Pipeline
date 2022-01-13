@@ -207,7 +207,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
             if(hit.collider.gameObject.tag == "Player"){
                 PhotonNetwork.Instantiate(playerHitImpact.name, hit.point, Quaternion.identity);
 
-                hit.collider.gameObject.GetPhotonView().RPC("DealDamage", RpcTarget.All, photonView.Owner.NickName, allGuns[selectedGun].shotDamage);
+                hit.collider.gameObject.GetPhotonView().RPC("DealDamage", RpcTarget.All, photonView.Owner.NickName, allGuns[selectedGun].shotDamage, PhotonNetwork.LocalPlayer.ActorNumber);
             }else{
                 GameObject obj_bulletImpact = Instantiate(bulletImpact, hit.point + (hit.normal * .002f), Quaternion.LookRotation(hit.normal, Vector3.up));
                 Destroy(obj_bulletImpact, 10f);
@@ -230,11 +230,11 @@ public class PlayerController : MonoBehaviourPunCallbacks
     }
 
     [PunRPC]// Run at same time in every copy of the player
-    public void DealDamage(string damager, int damageAmount){
-        TakeDamage(damager, damageAmount);
+    public void DealDamage(string damager, int damageAmount, int actor){
+        TakeDamage(damager, damageAmount, actor);
     }
 
-    public void TakeDamage(string damager, int damageAmount){
+    public void TakeDamage(string damager, int damageAmount, int actor){
         if(photonView.IsMine){
             //Debug.Log(photonView.Owner.NickName + " been hit by " + damager);
 
@@ -243,6 +243,8 @@ public class PlayerController : MonoBehaviourPunCallbacks
             if(currentHealth <= 0){
                 currentHealth = 0;
                 PlayerSpawner.instance.Die(damager);
+
+                MatchManager.instance.UpdateStatSend(actor, 0, 1);
             }
 
             
