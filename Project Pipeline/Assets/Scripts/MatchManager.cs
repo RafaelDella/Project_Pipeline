@@ -84,9 +84,9 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
 
         PhotonNetwork.RaiseEvent(
-            (byte)EventCodes.NewPlayer,
+            (byte)EventCodes.ListPlayer,
             package,
-            new RaiseEventOptions{ Receivers = ReceiverGroup.MasterClient},
+            new RaiseEventOptions{ Receivers = ReceiverGroup.All},
             new SendOptions { Reliability = true}
         );
 
@@ -96,14 +96,43 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
         PlayerInfo player = new PlayerInfo((string)dataReceived[0], (int)dataReceived[1], (int)dataReceived[2], (int)dataReceived[3]);
 
         allPlayers.Add(player);
+
+        ListPlayersSend();
     }
 
     public void ListPlayersSend(){
+        object[] package = new object[allPlayers.Count];
 
+        for(int i = 0; i < allPlayers.Count; i++){
+            object[] piece = new object[4];
+
+            piece[0] = allPlayers[i].name;
+            piece[1] = allPlayers[i].actor;
+            piece[2] = allPlayers[i].kills;
+            piece[3] = allPlayers[i].death;
+
+            package[i] = piece;
+        }
     }
 
     public void ListPlayersReceive(object[] dataReceived){
-        
+        allPlayers.Clear();
+
+        for(int i = 0; i < dataReceived.Length; i++){
+            object[] piece = (object[])dataReceived[i];
+            PlayerInfo player = new PlayerInfo(
+                (string)piece[0],
+                (int)piece[1],
+                (int)piece[2],
+                (int)piece[3]
+            );
+
+            allPlayers.Add(player);
+
+            if(PhotonNetwork.LocalPlayer.ActorNumber == player.actor){
+                index = i;
+            }
+        }
     }
 
     public void UpdateStatSend(){
