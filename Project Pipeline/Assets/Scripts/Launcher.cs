@@ -4,13 +4,12 @@ using UnityEngine;
 using Photon.Pun;
 using TMPro;
 using Photon.Realtime;
-using UnityEngine.UI;
 
 public class Launcher : MonoBehaviourPunCallbacks
 {
     public static Launcher instance;
-
-    private void Awake() {
+    private void Awake()
+    {
         instance = this;
     }
 
@@ -23,14 +22,13 @@ public class Launcher : MonoBehaviourPunCallbacks
     public TMP_InputField roomNameInput;
 
     public GameObject roomScreen;
-    public TMP_Text roomNameText;
-    public TMP_Text playerNameLabel;
-    private List<TMP_Text> allPLayerNames = new List<TMP_Text>();
+    public TMP_Text roomNameText, playerNameLabel;
+    private List<TMP_Text> allPlayerNames = new List<TMP_Text>();
 
     public GameObject errorScreen;
     public TMP_Text errorText;
 
-    public GameObject roomBrownserScreen;
+    public GameObject roomBrowserScreen;
     public RoomButton theRoomButton;
     private List<RoomButton> allRoomButtons = new List<RoomButton>();
 
@@ -43,35 +41,45 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     public GameObject roomTestButton;
 
-    private void Start() {
+    public string[] allMaps;
+    public bool changeMapBetweenRounds = true;
+
+    // Start is called before the first frame update
+    void Start()
+    {
         CloseMenus();
 
         loadingScreen.SetActive(true);
         loadingText.text = "Connecting To Network...";
 
-        PhotonNetwork.ConnectUsingSettings();
+        if (!PhotonNetwork.IsConnected)
+        {
+            PhotonNetwork.ConnectUsingSettings();
+        }
 
 #if UNITY_EDITOR
         roomTestButton.SetActive(true);
-#endif 
+#endif
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
-
     }
 
-    void CloseMenus(){
+    void CloseMenus()
+    {
         loadingScreen.SetActive(false);
         menuButtons.SetActive(false);
         createRoomScreen.SetActive(false);
         roomScreen.SetActive(false);
         errorScreen.SetActive(false);
-        roomBrownserScreen.SetActive(false);
+        roomBrowserScreen.SetActive(false);
         nameInputScreen.SetActive(false);
     }
 
-    public override void OnConnectedToMaster(){
+    public override void OnConnectedToMaster()
+    {
         
+
         PhotonNetwork.JoinLobby();
 
         PhotonNetwork.AutomaticallySyncScene = true;
@@ -79,37 +87,39 @@ public class Launcher : MonoBehaviourPunCallbacks
         loadingText.text = "Joining Lobby...";
     }
 
-    public override void OnJoinedLobby(){
-        
+    public override void OnJoinedLobby()
+    {
         CloseMenus();
         menuButtons.SetActive(true);
 
-        //PhotonNetwork.NickName = Random.Range(0, 1000).ToString();
+        PhotonNetwork.NickName = Random.Range(0, 1000).ToString();
 
-        if(!hasSetNick){
+        if (!hasSetNick)
+        {
             CloseMenus();
             nameInputScreen.SetActive(true);
 
-            if(PlayerPrefs.HasKey("playerName")){
+            if (PlayerPrefs.HasKey("playerName"))
+            {
                 nameInput.text = PlayerPrefs.GetString("playerName");
             }
-        }else{
+        }
+        else
+        {
             PhotonNetwork.NickName = PlayerPrefs.GetString("playerName");
         }
     }
 
-    public void CloseCreateRoom(){
-        CloseMenus();
-        menuButtons.SetActive(true);
-    }
-
-    public void OpenRoomCreate(){
+    public void OpenRoomCreate()
+    {
         CloseMenus();
         createRoomScreen.SetActive(true);
     }
 
-    public void CreateRoom(){
-        if(!string.IsNullOrEmpty(roomNameInput.text)){
+    public void CreateRoom()
+    {
+        if(!string.IsNullOrEmpty(roomNameInput.text))
+        {
             RoomOptions options = new RoomOptions();
             options.MaxPlayers = 8;
 
@@ -121,7 +131,8 @@ public class Launcher : MonoBehaviourPunCallbacks
         }
     }
 
-    public override void OnJoinedRoom(){
+    public override void OnJoinedRoom()
+    {
         CloseMenus();
         roomScreen.SetActive(true);
 
@@ -129,86 +140,101 @@ public class Launcher : MonoBehaviourPunCallbacks
 
         ListAllPlayers();
 
-        if(PhotonNetwork.IsMasterClient){
+        if(PhotonNetwork.IsMasterClient)
+        {
             startButton.SetActive(true);
-        }else{
+        } else
+        {
             startButton.SetActive(false);
         }
     }
 
-    private void ListAllPlayers(){
-        foreach(TMP_Text player in allPLayerNames){
+    private void ListAllPlayers()
+    {
+        foreach(TMP_Text player in allPlayerNames)
+        {
             Destroy(player.gameObject);
-
         }
-        allPLayerNames.Clear();
+        allPlayerNames.Clear();
 
         Player[] players = PhotonNetwork.PlayerList;
-        for(int i = 0; i < players.Length; i++){
-            TMP_Text newPlayerNameLabel = Instantiate(playerNameLabel, playerNameLabel.transform.parent);
-            newPlayerNameLabel.text = players[i].NickName;
-            newPlayerNameLabel.gameObject.SetActive(true);
-            
-            allPLayerNames.Add(newPlayerNameLabel);
+        for(int i = 0; i <players.Length; i++)
+        {
+            TMP_Text newPlayerLabel = Instantiate(playerNameLabel, playerNameLabel.transform.parent);
+            newPlayerLabel.text = players[i].NickName;
+            newPlayerLabel.gameObject.SetActive(true);
+
+            allPlayerNames.Add(newPlayerLabel);
         }
     }
 
-    public override void OnPlayerEnteredRoom(Player newPlayer){
-        TMP_Text newPlayerNameLabel = Instantiate(playerNameLabel, playerNameLabel.transform.parent);
-        newPlayerNameLabel.text = newPlayer.NickName;
-        newPlayerNameLabel.gameObject.SetActive(true);
-            
-        allPLayerNames.Add(newPlayerNameLabel);
+    public override void OnPlayerEnteredRoom(Player newPlayer)
+    {
+        TMP_Text newPlayerLabel = Instantiate(playerNameLabel, playerNameLabel.transform.parent);
+        newPlayerLabel.text = newPlayer.NickName;
+        newPlayerLabel.gameObject.SetActive(true);
+
+        allPlayerNames.Add(newPlayerLabel);
     }
 
-    public override void OnPlayerLeftRoom(Player otherPlayer){
+    public override void OnPlayerLeftRoom(Player otherPlayer)
+    {
         ListAllPlayers();
     }
 
-    public override void OnCreateRoomFailed(short returnCode, string message){
-        errorText.text = "Failed To Created Room: " + message;
+    public override void OnCreateRoomFailed(short returnCode, string message)
+    {
+        errorText.text = "Failed To Create Room: " + message;
         CloseMenus();
         errorScreen.SetActive(true);
-
     }
 
-    public void CloseErrorScreen(){
+    public void CloseErrorScreen()
+    {
         CloseMenus();
         menuButtons.SetActive(true);
     }
 
-    public void LeaveRoom(){
+    public void LeaveRoom()
+    {
         PhotonNetwork.LeaveRoom();
         CloseMenus();
-        loadingText.text = "Leaving Room...";
+        loadingText.text = "Leaving Room";
         loadingScreen.SetActive(true);
     }
 
-    public override void OnLeftRoom(){
+    public override void OnLeftRoom()
+    {
         CloseMenus();
         menuButtons.SetActive(true);
     }
 
-    public void OpenRoomBrowser(){
+    public void OpenRoomBrowser()
+    {
         CloseMenus();
-        roomBrownserScreen.SetActive(true);
+        roomBrowserScreen.SetActive(true);
     }
 
-    public void CloseRoomBrowser(){
+    public void CloseRoomBrowser()
+    {
         CloseMenus();
         menuButtons.SetActive(true);
     }
 
-    public override void OnRoomListUpdate(List<RoomInfo> roomList){
-        foreach(RoomButton rb in allRoomButtons){
-            Destroy(rb);
+    public override void OnRoomListUpdate(List<RoomInfo> roomList)
+    {
+        foreach(RoomButton rb in allRoomButtons)
+        {
+            Destroy(rb.gameObject);
         }
         allRoomButtons.Clear();
 
         theRoomButton.gameObject.SetActive(false);
 
-        for(int i = 0; i < roomList.Count; i++){
-            if(roomList[i].PlayerCount != roomList[i].MaxPlayers && !roomList[i].RemovedFromList){
+        for (int i = 0; i < roomList.Count; i++)
+        {
+            if(roomList[i].PlayerCount != roomList[i].MaxPlayers && !roomList[i].RemovedFromList)
+            {
                 RoomButton newButton = Instantiate(theRoomButton, theRoomButton.transform.parent);
                 newButton.SetButtonDetails(roomList[i]);
                 newButton.gameObject.SetActive(true);
@@ -218,16 +244,19 @@ public class Launcher : MonoBehaviourPunCallbacks
         }
     }
 
-    public void JoinRoom(RoomInfo inputInfo){
+    public void JoinRoom(RoomInfo inputInfo)
+    {
         PhotonNetwork.JoinRoom(inputInfo.Name);
 
         CloseMenus();
-        loadingText.text = "Joining Room...";
+        loadingText.text = "Joining Room";
         loadingScreen.SetActive(true);
     }
 
-    public void SetNickname(){
-        if(!string.IsNullOrEmpty(nameInput.text)){
+    public void SetNickname()
+    {
+        if(!string.IsNullOrEmpty(nameInput.text))
+        {
             PhotonNetwork.NickName = nameInput.text;
 
             PlayerPrefs.SetString("playerName", nameInput.text);
@@ -236,34 +265,41 @@ public class Launcher : MonoBehaviourPunCallbacks
             menuButtons.SetActive(true);
 
             hasSetNick = true;
-            
         }
     }
 
-    public void StartGame(){
-        PhotonNetwork.LoadLevel(levelToPlay);
+    public void StartGame()
+    {
+        //PhotonNetwork.LoadLevel(levelToPlay);
+
+        PhotonNetwork.LoadLevel(allMaps[Random.Range(0, allMaps.Length)]);
     }
 
-    public override void OnMasterClientSwitched(Player newMasterClient){
-        if(PhotonNetwork.IsMasterClient){
+    public override void OnMasterClientSwitched(Player newMasterClient)
+    {
+        if (PhotonNetwork.IsMasterClient)
+        {
             startButton.SetActive(true);
-        }else{
+        }
+        else
+        {
             startButton.SetActive(false);
         }
     }
 
-    public void QuickJoin(){
+    public void QuickJoin()
+    {
         RoomOptions options = new RoomOptions();
         options.MaxPlayers = 8;
 
         PhotonNetwork.CreateRoom("Test", options);
         CloseMenus();
-        loadingText.text = "Creating Test Room...";
+        loadingText.text = "Creating Room";
         loadingScreen.SetActive(true);
     }
 
-    public void QuitGame(){
+    public void QuitGame()
+    {
         Application.Quit();
     }
-
 }

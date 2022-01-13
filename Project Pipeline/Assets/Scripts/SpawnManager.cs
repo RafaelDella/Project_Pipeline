@@ -5,21 +5,31 @@ using UnityEngine;
 public class SpawnManager : MonoBehaviour
 {
     public static SpawnManager instance;
-    public Transform[] spawnPoints;
 
-    private void Awake() {
+    private void Awake()
+    {
         instance = this;
     }
 
-    private void Start() {
-        foreach (Transform spawn in spawnPoints){
+    public Transform[] spawnPoints;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        foreach(Transform spawn in spawnPoints)
+        {
             spawn.gameObject.SetActive(false);
         }
     }
 
-    public Transform GetSpawnPoint(){
-        return spawnPoints[Random.Range(0, spawnPoints.Length)];
+    // Update is called once per frame
+    void Update()
+    {
+        
     }
 
-
+    public Transform GetSpawnPoint()
+    {
+        return spawnPoints[Random.Range(0, spawnPoints.Length)];
+    }
 }

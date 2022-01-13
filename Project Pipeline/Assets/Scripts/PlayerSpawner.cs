@@ -7,7 +7,8 @@ public class PlayerSpawner : MonoBehaviour
 {
     public static PlayerSpawner instance;
 
-    private void Awake() {
+    private void Awake()
+    {
         instance = this;
     }
 
@@ -18,31 +19,42 @@ public class PlayerSpawner : MonoBehaviour
 
     public float respawnTime = 5f;
 
-    private void Start() {
-        if(PhotonNetwork.IsConnected){
+    // Start is called before the first frame update
+    void Start()
+    {
+        if(PhotonNetwork.IsConnected)
+        {
             SpawnPlayer();
         }
     }
 
-    public void SpawnPlayer(){
+    public void SpawnPlayer()
+    {
         Transform spawnPoint = SpawnManager.instance.GetSpawnPoint();
 
         player = PhotonNetwork.Instantiate(playerPrefab.name, spawnPoint.position, spawnPoint.rotation);
     }
 
-    public void Die(string damager){
+    public void Die(string damager)
+    {
+        
+
         UIController.instance.deathText.text = "You were killed by " + damager;
+
+        //PhotonNetwork.Destroy(player);
 
         //SpawnPlayer();
 
-        MatchManager.instance.UpdateStatSend(PhotonNetwork.LocalPlayer.ActorNumber, 1, 1);
+        MatchManager.instance.UpdateStatsSend(PhotonNetwork.LocalPlayer.ActorNumber, 1, 1);
 
-        if(player != null){
+        if(player != null)
+        {
             StartCoroutine(DieCo());
         }
     }
 
-    public IEnumerator DieCo(){
+    public IEnumerator DieCo()
+    {
         PhotonNetwork.Instantiate(deathEffect.name, player.transform.position, Quaternion.identity);
 
         PhotonNetwork.Destroy(player);
@@ -53,11 +65,9 @@ public class PlayerSpawner : MonoBehaviour
 
         UIController.instance.deathScreen.SetActive(false);
 
-        if(MatchManager.instance.state == MatchManager.GameState.Playing && player == null){
+        if (MatchManager.instance.state == MatchManager.GameState.Playing && player == null)
+        {
             SpawnPlayer();
-        }else{
-
         }
     }
-    
 }
